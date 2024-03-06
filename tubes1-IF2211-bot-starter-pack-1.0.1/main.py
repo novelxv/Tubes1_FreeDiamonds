@@ -10,6 +10,7 @@ from game.util import *
 from game.logic.base import BaseLogic
 from game.logic.novel import Novel
 from game.logic.lidya import Lidya
+from game.logic.benerinnovel import Novel2
 
 init()
 BASE_URL = "http://localhost:3000/api"
@@ -18,6 +19,7 @@ CONTROLLERS = {
     "Random": RandomLogic,
     "Novel": Novel,
     "Lidya": Lidya,
+    "Novel2": Novel2,
 }
 
 ###############################################################################
