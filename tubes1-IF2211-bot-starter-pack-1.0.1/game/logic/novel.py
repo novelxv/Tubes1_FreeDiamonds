@@ -7,20 +7,17 @@ class Novel(BaseLogic):
     def __init__(self):
         # Initialize attributes necessary
         self.collected_diamonds = 0
-        
-    def find_nearest_diamond(self, bot_position: Position,diamonds: list, board: Board, inventory_size: int):
+
+    def find_nearest_diamond(self, bot_position: Position, diamonds: list, board: Board):
         # Find the nearest diamond
         shortest_distance = float('inf')
         nearest_diamond = None
 
         for diamond in diamonds:
-            if self.collected_diamonds >= inventory_size:
-                break
             distance = abs(diamond.position.x - bot_position.x) + abs(diamond.position.y - bot_position.y)
             if distance < shortest_distance and distance != 0:
                 shortest_distance = distance
                 nearest_diamond = diamond
-                self.collected_diamonds += 1
         return nearest_diamond
 
     def next_move(self, board_bot: GameObject, board: Board) -> Tuple[int, int]:
@@ -28,18 +25,19 @@ class Novel(BaseLogic):
         bot_position = board_bot.position
         diamonds = board.diamonds
 
-        nearest_diamond = self.find_nearest_diamond(bot_position, diamonds, board, inventory_size)
-
-        if nearest_diamond:
-            direction_to_diamond = get_direction(bot_position.x, bot_position.y, nearest_diamond.position.x, nearest_diamond.position.y)
-            return direction_to_diamond
-        else:
-            # Jika tidak ada diamond atau inventory penuh, kembali ke base
+        if self.collected_diamonds < inventory_size:
+            nearest_diamond = self.find_nearest_diamond(bot_position, diamonds, board)
+            if nearest_diamond:
+                direction_to_diamond = get_direction(bot_position.x, bot_position.y, nearest_diamond.position.x, nearest_diamond.position.y)
+                self.collected_diamonds += 1
+                return direction_to_diamond
+        # If no diamonds are found or inventory is full, return to base
+        elif self.collected_diamonds == inventory_size:
             base_position = board_bot.properties.base
             if base_position:
                 direction_to_base = get_direction(bot_position.x, bot_position.y, base_position.x, base_position.y)
-                self.collected_diamonds = 0
+                self.collected_diamonds = 0  # Reset collected diamonds when returning to base
                 return direction_to_base
             else:
-                # Default move jika tidak ada instruksi lain
-                return 1, 0    
+                # Default move if no other instructions
+                return 1, 0
