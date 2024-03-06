@@ -31,10 +31,10 @@ class Novel(BaseLogic):
 
         nearest_diamond = self.find_nearest_diamond(bot_position, diamonds, board, inventory_size)
 
-        if nearest_diamond:
+        if nearest_diamond and inventory_size < 5:
             direction_to_diamond = get_direction(bot_position.x, bot_position.y, nearest_diamond.position.x, nearest_diamond.position.y)
             return direction_to_diamond
-        elif nearest_diamond is None or inventory_size == 5:
+        else:
             # Jika tidak ada diamond atau inventory penuh, kembali ke base
             base_position = board_bot.properties.base
             if base_position:
