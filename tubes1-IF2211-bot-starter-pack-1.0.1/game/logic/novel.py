@@ -18,7 +18,7 @@ class Novel(BaseLogic):
             if collected_diamonds >= inventory_size:
                 break
             distance = abs(diamond.position.x - bot_position.x) + abs(diamond.position.y - bot_position.y)
-            if distance < shortest_distance:
+            if distance < shortest_distance and distance != 0:
                 shortest_distance = distance
                 nearest_diamond = diamond
                 collected_diamonds += 1
