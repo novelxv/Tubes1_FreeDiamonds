@@ -31,13 +31,13 @@ class Novel(BaseLogic):
                 direction_to_diamond = get_direction(bot_position.x, bot_position.y, nearest_diamond.position.x, nearest_diamond.position.y)
                 self.collected_diamonds += 1
                 return direction_to_diamond
-
         # If no diamonds are found or inventory is full, return to base
-        base_position = board_bot.properties.base
-        if base_position:
-            direction_to_base = get_direction(bot_position.x, bot_position.y, base_position.x, base_position.y)
-            self.collected_diamonds = 0  # Reset collected diamonds when returning to base
-            return direction_to_base
-        else:
-            # Default move if no other instructions
-            return 1, 0
+        elif self.collected_diamonds == inventory_size:
+            base_position = board_bot.properties.base
+            if base_position:
+                direction_to_base = get_direction(bot_position.x, bot_position.y, base_position.x, base_position.y)
+                self.collected_diamonds = 0  # Reset collected diamonds when returning to base
+                return direction_to_base
+            else:
+                # Default move if no other instructions
+                return 1, 0
