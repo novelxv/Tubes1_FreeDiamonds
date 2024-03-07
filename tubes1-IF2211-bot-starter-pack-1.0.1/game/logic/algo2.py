@@ -10,6 +10,8 @@ class Algo2(BaseLogic):
     def find_nearest_diamond(self, bot_position: Position, list_diamonds: list, prefer_low_value=False):
         shortest_distance = float('inf')
         nearest_diamond = None
+        has_diamond_2 = any(diamond.properies.points == 2 for diamond in list_diamonds)
+        
         # Memperbarui logika untuk memprioritaskan diamond berdasarkan kondisi
         for diamond in list_diamonds:
             # Hitung jarak dari bot ke diamond
@@ -21,11 +23,17 @@ class Algo2(BaseLogic):
                     shortest_distance = distance
                     nearest_diamond = diamond
             else:
-                # Jika tidak, pilih diamond dengan poin tertinggi yang bisa ditemukan terlebih dahulu
-                # Ini akan selalu memprioritaskan diamond dengan poin 2 terlebih dahulu
-                if distance < shortest_distance and diamond.properties.points == 2:
-                    shortest_distance = distance
-                    nearest_diamond = diamond
+                if has_diamond_2:
+                    # Jika tidak, pilih diamond dengan poin tertinggi yang bisa ditemukan terlebih dahulu
+                    # Ini akan selalu memprioritaskan diamond dengan poin 2 terlebih dahulu
+                    if distance < shortest_distance and diamond.properties.points == 2:
+                        shortest_distance = distance
+                        nearest_diamond = diamond
+                else:
+                    # Jika tidak ada diamond dengan poin 2, pilih diamond dengan poin 1
+                    if distance < shortest_distance and diamond.properties.points == 1:
+                        shortest_distance = distance
+                        nearest_diamond = diamond
 
         return nearest_diamond
 
