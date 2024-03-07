@@ -10,16 +10,12 @@ from game.util import *
 from game.logic.base import BaseLogic
 from game.logic.novel import Novel
 from game.logic.lidya import Lidya
-<<<<<<< Updated upstream
-from game.logic.benerinnovel import Novel2
 from game.logic.distance import Distance
 from game.logic.density import Density
 from game.logic.rafi import Rafi
-=======
 from game.logic.algo1 import Algo1
 from game.logic.algo2 import Algo2
 from game.logic.algo4 import Algo4
->>>>>>> Stashed changes
 
 init()
 BASE_URL = "http://localhost:3000/api"
@@ -28,16 +24,12 @@ CONTROLLERS = {
     "Random": RandomLogic,
     "Novel": Novel,
     "Lidya": Lidya,
-<<<<<<< Updated upstream
-    "Novel2": Novel2,
     "Distance": Distance,
     "Density": Density,
     "Rafi": Rafi,
-=======
     "Algo1": Algo1,
     "Algo2": Algo2,
     "Algo4": Algo4
->>>>>>> Stashed changes
 }
 
 ###############################################################################
