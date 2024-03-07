@@ -11,6 +11,8 @@ from game.logic.base import BaseLogic
 from game.logic.novel import Novel
 from game.logic.lidya import Lidya
 from game.logic.benerinnovel import Novel2
+from game.logic.distance import Distance
+from game.logic.density import Density
 
 init()
 BASE_URL = "http://localhost:3000/api"
@@ -20,6 +22,8 @@ CONTROLLERS = {
     "Novel": Novel,
     "Lidya": Lidya,
     "Novel2": Novel2,
+    "Distance": Distance,
+    "Density": Density,
 }
 
 ###############################################################################
