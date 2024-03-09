@@ -16,6 +16,24 @@ class FreeDiamonds(BaseLogic):
         distance = abs(goal.x - bot_position.x) + abs(goal.y - bot_position.y)
         return distance # tipe data int
     
+    def teleporter_distance(self, bot_position: Position, target_position: Position, teleporters: list):
+        if len(teleporters) < 2:
+            return float('inf'), None  # Return infinite distance jika jumlah teleporter < 2
+
+        teleporter_positions = [teleporter.position for teleporter in teleporters]
+        teleporter1, teleporter2 = teleporter_positions
+
+        # Distance ke teleporter 1 + distance dari teleporter 2 ke target
+        distance_via_teleporter1 = self.distance(bot_position, teleporter1) + self.distance(teleporter2, target_position)
+
+        # Distance ke teleporter 2 + distance dari teleporter 1 ke target
+        distance_via_teleporter2 = self.distance(bot_position, teleporter2) + self.distance(teleporter1, target_position)
+
+        if distance_via_teleporter1 < distance_via_teleporter2:
+            return distance_via_teleporter1
+        else:
+            return distance_via_teleporter2
+
     def teleport(self, bot_position: Position, board: Board, goal_position: Position):
         """ Mencari jarak terpendek dari bot ke goal position dengan mempertimbangkan teleporter """
         list_teleporter = [i for i in board.game_objects if i.type == "TeleportGameObject"]
@@ -34,26 +52,80 @@ class FreeDiamonds(BaseLogic):
         choosen = min(distance, distance1, distance2) 
         if (choosen == distance1):
             # Masuk ke teleporter 1
+            print("TELEPORT") # debug
             return list_teleporter[0].position
         elif (choosen == distance2):
             # Masuk ke teleporter 2
+            print("TELEPORT") # debug
             return list_teleporter[1].position
         else: # Tidak melewati teleporter
             return goal_position # tipe data Position
 
-    def highest_density(self, bot_position: Position, list_diamonds: list):
-        """ Mencari diamond dengan density tertinggi """
-        highest_density = 0
-        highest_density_position = None
+    # def highest_density(self, bot_position: Position, list_diamonds: list):
+    #     """ Mencari diamond dengan density tertinggi """
+    #     highest_density = 0
+    #     highest_density_position = None
+
+    #     for diamond in list_diamonds:
+    #         distance = self.distance(bot_position, diamond.position)
+    #         point = diamond.properties.points
+    #         density = point / distance
+    #         if density > highest_density:
+    #             highest_density = density
+    #             highest_density_position = diamond.position
+    #     return highest_density_position # tipe data Position
+
+    # ----------------- NEW -----------------
+    def get_nearest_blue(self, bot_position: Position, board: Board, list_diamonds: list):
+        """ Mencari diamond biru terdekat """
+        shortest_distance = float('inf')
+        nearest_blue_position = None
+        teleporters = [i for i in board.game_objects if i.type == "TeleportGameObject"]
 
         for diamond in list_diamonds:
             distance = self.distance(bot_position, diamond.position)
-            point = diamond.properties.points
-            density = point / distance
-            if density > highest_density:
-                highest_density = density
-                highest_density_position = diamond.position
-        return highest_density_position # tipe data Position
+            teleport_distance = self.teleporter_distance(bot_position, diamond.position, teleporters)
+            # Bandingkan jarak jika melewati teleporter dan tidak
+            if teleport_distance < distance:
+                distance = teleport_distance
+            if diamond.properties.points == 1 and distance < shortest_distance:
+                shortest_distance = distance
+                nearest_blue_position = diamond.position
+
+            print("NEAREST BLUE: ", nearest_blue_position) # debug
+
+            return nearest_blue_position # tipe data Position
+
+    def highest_density(self, bot_position: Position, board: Board, list_diamonds: list, prefer_low_value=False):
+        """ Mencari diamond dengan density tertinggi """
+        highest_density = 0
+        highest_density_diamond = None
+        highest_density_position = None
+        teleporters = [i for i in board.game_objects if i.type == "TeleportGameObject"]
+
+        if prefer_low_value:
+            # Jika prefer_low_value True, cari diamond dengan poin 1
+            diamond_position = self.get_nearest_blue(bot_position, board, list_diamonds)
+            return diamond_position # tipe data Position
+        else:    
+            for diamond in list_diamonds:
+                distance = self.distance(bot_position, diamond.position)
+                teleporters_distance = self.teleporter_distance(bot_position, diamond.position, teleporters)
+                # Bandingkan jarak jika melewati teleporter dan tidak
+                if teleporters_distance < distance:
+                    distance = teleporters_distance
+                    
+                point = diamond.properties.points
+                if distance != 0:
+                    density = point / distance
+                    if density > highest_density or (density == highest_density and point > highest_density_diamond.properties.points):
+                        highest_density = density
+                        highest_density_diamond = diamond
+                        highest_density_position = diamond.position
+
+            return highest_density_position # tipe data Position
+                
+    # ----------------- NEW -----------------  
     
     def is_tackle(self, board_bot: GameObject, bot_position: Position, board: Board):
         """ Mengecek apakah ada musuh yang bisa di-tackle """
@@ -73,15 +145,15 @@ class FreeDiamonds(BaseLogic):
     def push_red_button(self, bot_position:Position, highest_density_position:Position, board: Board):
         """ Memilih antara red button atau diamond dengan density tertinggi berdasarkan jarak terdekat """
         list_red_button = [i for i in board.game_objects if i.type == "DiamondButtonGameObject"]
-        print(list_red_button) # debug
+        # print(list_red_button) # delete
         diamond_distance = self.distance(bot_position, highest_density_position)
         for button in list_red_button:
             button_distance = self.distance(bot_position, button.position)
             if (button_distance < diamond_distance):
-                print("go to red button") # debug
+                print("OKE, KE RED BUTTON") # debug
                 return button.position # tipe data Position
             else:
-                print("go to diamond") # debug
+                print("GAMAU, KE DIAMOND AJA. LEBIH DEKET.") # debug
                 return highest_density_position # tipe data Position 
 
     def next_move(self, board_bot: GameObject, board: Board) -> Tuple[int, int]:
@@ -94,8 +166,7 @@ class FreeDiamonds(BaseLogic):
         milliseconds_left = board_bot.properties.milliseconds_left if board_bot.properties.milliseconds_left else 0
         seconds_left = milliseconds_left / 1000
 
-        list_teleporter = self.teleport(bot_position, board, base_position)
-        print("TELEPORTERS: ", list_teleporter) # debug
+        # list_teleporter = [i for i in board.game_objects if i.type == "TeleportGameObject"]
 
         distance_to_base = self.distance(bot_position, base_position)
 
@@ -109,18 +180,27 @@ class FreeDiamonds(BaseLogic):
             delta_y = tackle_check[1]
             print("TACKLE: ", delta_x, delta_y) # debug
         else:
-            highest_density_position = self.highest_density(bot_position, list_diamonds)
+            if (collected == inventory_size - 1):
+                # Jika inventory hampir penuh, ubah strategi untuk mengumpulkan diamond poin 1
+                highest_density_position = self.highest_density(bot_position, board, list_diamonds, True)
+                print("INVENTORY HAMPIR PENUH, KE DIAMOND BIRU") # debug
+            else:
+                # Ke diamond dengan density tertinggi
+                highest_density_position = self.highest_density(bot_position, board, list_diamonds, False)
+                print("KE DIAMOND DENGAN DENSITY TERTINGGI") # debug
+
             if (seconds_left - 2 <= distance_to_base and collected > 0):
                 # Jika waktu tersisa dalam detik kurang lebih sama dengan jarak ke base, kembali ke base
-                if (not position_equals(bot_position, base_position) and not position_equals(bot_position, list_teleporter)):  
+                if (not position_equals(bot_position, base_position)):  
                     self.goal_position = base_position
+                    print("WAKTU HABIS, AYO KE BASE") # debug
             elif (len(list_diamonds) <= 7):
                 # Jika diamond kurang dari 7, pilih antara red button atau diamond dengan density tertinggi
                 self.goal_position = self.push_red_button(bot_position, highest_density_position, board)
-            # elif (collected == 4 and highest_density_position.properties.points == 2):
-            #     self.goal_position = base_position # delete
+                print("DIAMOND KURANG, AYO PENCET RED BUTTON") # debug
             else:
                 # Ke diamond dengan density tertinggi
+                print("AMBIL DIAMOND!!!") # debug
                 self.goal_position = highest_density_position
         
         if self.goal_position:
@@ -141,6 +221,7 @@ class FreeDiamonds(BaseLogic):
                 self.current_direction = (self.current_direction + 1) % len(
                     self.directions
                 )
+            print("RANDOM MOVE") # debug
 
         if (delta_x == delta_y):
             # Menghindari invalid move
