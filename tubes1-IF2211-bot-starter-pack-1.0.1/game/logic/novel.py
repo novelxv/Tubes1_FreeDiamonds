@@ -58,7 +58,8 @@ class Novel(BaseLogic):
             print("ambil biru") # debug
             return teleporter_used
         else:
-            return nearest_blue
+            print("ambil biru") # debug
+            return nearest_blue.position
 
     def highest_density(self, bot_position: Position, board: Board, list_diamonds: list, prefer_low_value=False):
         highest_density = 0
@@ -68,7 +69,8 @@ class Novel(BaseLogic):
         teleporter_used = None
 
         if prefer_low_value:
-            highest_density_position = self.get_nearest_blue(bot_position, board, list_diamonds)
+            go_to_position = self.get_nearest_blue(bot_position, board, list_diamonds)
+            return go_to_position
         else:    
             for diamond in list_diamonds:
                 distance = self.distance(bot_position, diamond.position)
@@ -151,14 +153,16 @@ class Novel(BaseLogic):
             lewat_teleporter = True
 
         # Jika waktu tersisa dalam detik sama dengan jarak ke base, kembali ke base
-        if seconds_left - 1.8 <= distance_to_base:
-            direction_to_base = get_direction(bot_position.x, bot_position.y, base_position.x, base_position.y)
-            if lewat_teleporter:
-                print("TELEPORTER USED, ", teleporter_distance_to_base[1].x, teleporter_distance_to_base[1].y) # debug
-                print("kembali ke base") # debug
-                return self.get_direction(bot_position, teleporter_distance_to_base[1])
-            else:
-                return direction_to_base
+        if seconds_left - 2 <= distance_to_base:
+            # jika sekarang tidak di base, kembali ke base
+            if not position_equals(bot_position, base_position):
+                direction_to_base = get_direction(bot_position.x, bot_position.y, base_position.x, base_position.y)
+                if lewat_teleporter:
+                    print("TELEPORTER USED, ", teleporter_distance_to_base[1].x, teleporter_distance_to_base[1].y) # debug
+                    print("kembali ke base") # debug
+                    return self.get_direction(bot_position, teleporter_distance_to_base[1])
+                else:
+                    return direction_to_base
 
         # Jika inventory hampir penuh, ubah strategi untuk mengumpulkan diamond poin 1
         prefer_low_value_diamond = collected == inventory_size - 1
@@ -170,6 +174,7 @@ class Novel(BaseLogic):
             next_position_diamond = self.next_position(bot_position, direction_to_diamond)
             # jika 0, 0 atau posisi berikutnya ada dalam daftar to_avoid
             if self.is_position_in_list(next_position_diamond, to_avoid) or direction_to_diamond == (0, 0):
+                print("AVOIDDDDD") # debug
                 return 1, 0
             return direction_to_diamond
         else:
@@ -178,6 +183,7 @@ class Novel(BaseLogic):
                 direction_to_base = self.get_direction(bot_position, base_position)
                 next_position_base = self.next_position(bot_position, direction_to_base)
                 if self.is_position_in_list(next_position_base, to_avoid) or direction_to_base == (0, 0):
+                    print("AVOIDDDDD") # debug
                     return 1, 0
                 if lewat_teleporter:
                     print("TELEPORTER USED, ", teleporter_distance_to_base[1].x, teleporter_distance_to_base[1].y) # debug
