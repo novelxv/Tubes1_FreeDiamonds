@@ -61,21 +61,6 @@ class FreeDiamonds(BaseLogic):
         else: # Tidak melewati teleporter
             return goal_position # tipe data Position
 
-    # def highest_density(self, bot_position: Position, list_diamonds: list):
-    #     """ Mencari diamond dengan density tertinggi """
-    #     highest_density = 0
-    #     highest_density_position = None
-
-    #     for diamond in list_diamonds:
-    #         distance = self.distance(bot_position, diamond.position)
-    #         point = diamond.properties.points
-    #         density = point / distance
-    #         if density > highest_density:
-    #             highest_density = density
-    #             highest_density_position = diamond.position
-    #     return highest_density_position # tipe data Position
-
-    # ----------------- NEW -----------------
     def get_nearest_blue(self, bot_position: Position, board: Board):
         """ Mencari diamond biru terdekat """
         shortest_distance = float('inf')
@@ -126,30 +111,30 @@ class FreeDiamonds(BaseLogic):
                         highest_density_position = diamond.position
 
             return highest_density_position # tipe data Position
-                
-    # ----------------- NEW -----------------  
     
     def is_tackle(self, board_bot: GameObject, bot_position: Position, board: Board):
         """ Mengecek apakah ada musuh yang bisa di-tackle """
         enemy = [i for i in board.bots if (i.position != bot_position)]
-        # move = [-99, -99]
+        target_position = None
+
         for target in enemy:
             if ((target.properties.diamonds > 0) and (board_bot.properties.diamonds < board_bot.properties.inventory_size) and (board_bot.properties.milliseconds_left < target.properties.milliseconds_left)):
                 # Jika musuh memiliki diamond, bot belum penuh, dan waktu bot lebih sedikit
                 # return target.position
                 if (bot_position.x == target.position.x) and (abs(bot_position.y - target.position.y) == 1):
                     # Jika musuh ada di atas atau bawah bot
-                    return target.position
+                    target_position = target.position
                 elif (bot_position.y == target.position.y) and (abs(bot_position.x - target.position.x) == 1):
                     # Jika musuh ada di kiri atau kanan bot
-                    return target.position
-        # return move # tipe data tuple
-    
+                    target_position = target.position
+
+        return target_position # tipe data Position
+        
     def push_red_button(self, bot_position:Position, highest_density_position:Position, board: Board):
         """ Memilih antara red button atau diamond dengan density tertinggi berdasarkan jarak terdekat """
         list_red_button = [i for i in board.game_objects if i.type == "DiamondButtonGameObject"]
-        # print(list_red_button) # delete
         diamond_distance = self.distance(bot_position, highest_density_position)
+        
         for button in list_red_button:
             button_distance = self.distance(bot_position, button.position)
             if (button_distance < diamond_distance):
@@ -168,8 +153,6 @@ class FreeDiamonds(BaseLogic):
         base_position = board_bot.properties.base
         milliseconds_left = board_bot.properties.milliseconds_left if board_bot.properties.milliseconds_left else 0
         seconds_left = milliseconds_left / 1000
-
-        # list_teleporter = [i for i in board.game_objects if i.type == "TeleportGameObject"]
 
         distance_to_base = self.distance(bot_position, base_position)
 
@@ -219,31 +202,14 @@ class FreeDiamonds(BaseLogic):
             self.goal_position.x,
             self.goal_position.y,
         )
-        # delete
-        # else:
-            # Jika tidak ada goal position, ke base
 
-            # delta = self.directions[self.current_direction]
-            # delta_x = delta[0]
-            # delta_y = delta[1]
-            # if random.random() > 0.6:
-            #     self.current_direction = (self.current_direction + 1) % len(
-            #         self.directions
-            #     )
-            # print("RANDOM MOVE") # debug
-
+        # Handling invalid move
         i = 0
         while (not board.is_valid_move(bot_position, delta_x, delta_y)):
             # Jika gerakan tidak valid, random gerakan lain
             delta_x = self.directions[i][0]
             delta_y = self.directions[i][1]
             i += 1
-            print("RANDOM MOVE")
-
-        # delete
-        # if (delta_x == delta_y):
-        #     # Menghindari invalid move
-        #     delta_x = 0
-        #     delta_y = 1
+            print("RANDOM MOVE") # debug
 
         return delta_x, delta_y
