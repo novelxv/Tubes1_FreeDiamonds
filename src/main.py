@@ -8,14 +8,9 @@ from game.bot_handler import BotHandler
 from game.logic.random import RandomLogic
 from game.util import *
 from game.logic.base import BaseLogic
-from game.logic.novel import Novel
-from game.logic.lidya import Lidya
 from game.logic.distance import Distance
+from game.logic.point import Point
 from game.logic.density import Density
-from game.logic.rafi import Rafi
-from game.logic.algo1 import Algo1
-from game.logic.algo2 import Algo2
-from game.logic.algo4 import Algo4
 from game.logic.free_diamonds import FreeDiamonds
 
 init()
@@ -23,14 +18,9 @@ BASE_URL = "http://localhost:3000/api"
 DEFAULT_BOARD_ID = 1
 CONTROLLERS = {
     "Random": RandomLogic,
-    "Novel": Novel,
-    "Lidya": Lidya,
     "Distance": Distance,
+    "Point": Point,
     "Density": Density,
-    "Rafi": Rafi,
-    "Algo1": Algo1,
-    "Algo2": Algo2,
-    "Algo4": Algo4,
     "FreeDiamonds": FreeDiamonds
 }
 

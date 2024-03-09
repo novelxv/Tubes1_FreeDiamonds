@@ -1,46 +1,49 @@
-from typing import Tuple, Optional
+from typing import Tuple
 from game.logic.base import BaseLogic
 from game.models import GameObject, Board, Position
-from ..util import get_direction
+from ..util import get_direction, position_equals
 
 class Distance(BaseLogic):
     def __init__(self):
         # Initialize attributes necessary
-        self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-        self.goal_position: Optional[Position] = None
+        pass
 
-    def find_nearest_diamond(self, bot_position: Position, listdiamonds: list):
-        # Find the nearest diamond
+    def find_nearest_diamond(self, bot_position: Position, list_diamonds: list, prefer_low_value=False):
+        # Cari diamond terdekat, dengan opsi untuk memprioritaskan diamond nilai rendah
         shortest_distance = float('inf')
         nearest_diamond = None
-        for diamond in listdiamonds:
+
+        for diamond in list_diamonds:
             distance = abs(diamond.position.x - bot_position.x) + abs(diamond.position.y - bot_position.y)
-            if distance < shortest_distance and distance != 0:
+            # Jika prefer_low_value True, cari diamond dengan poin 1
+            if prefer_low_value and diamond.properties.points != 1:
+                continue
+            if distance < shortest_distance:
                 shortest_distance = distance
                 nearest_diamond = diamond
+
         return nearest_diamond
 
     def next_move(self, board_bot: GameObject, board: Board) -> Tuple[int, int]:
-        inventory_size = board_bot.properties.inventory_size if board_bot.properties.inventory_size else 5 # default 5
+        inventory_size = board_bot.properties.inventory_size if board_bot.properties.inventory_size else 0
         bot_position = board_bot.position
-        listdiamonds = board.diamonds
-        collected = board_bot.properties.diamonds
+        list_diamonds = board.diamonds
+        collected = board_bot.properties.diamonds if board_bot.properties.diamonds else 0
 
-        if (collected == inventory_size):
-            base = board_bot.properties.base
-            self.goal_position = base
+        # Jika inventory hampir penuh, ubah strategi untuk mengumpulkan diamond poin 1
+        prefer_low_value_diamond = collected == inventory_size - 1
+
+        nearest_diamond = self.find_nearest_diamond(bot_position, list_diamonds, prefer_low_value_diamond)
+
+        if nearest_diamond and collected < inventory_size:
+            direction_to_diamond = get_direction(bot_position.x, bot_position.y, nearest_diamond.position.x, nearest_diamond.position.y)
+            return direction_to_diamond
         else:
-            nearest_diamond = self.find_nearest_diamond(bot_position, listdiamonds)
-            self.goal_position = nearest_diamond.position
-        
-        if self.goal_position:
-            # We are aiming for a specific position, calculate delta
-            delta_x, delta_y = get_direction(
-                bot_position.x,
-                bot_position.y,
-                self.goal_position.x,
-                self.goal_position.y,
-            )
-        return delta_x, delta_y
-
-
+            # Kembali ke base jika inventory penuh atau tidak ada diamond terdekat
+            base_position = board_bot.properties.base
+            if base_position:
+                direction_to_base = get_direction(bot_position.x, bot_position.y, base_position.x, base_position.y)
+                return direction_to_base
+            else:
+                # Gerakan default jika tidak ada instruksi lain
+                return 1, 0
