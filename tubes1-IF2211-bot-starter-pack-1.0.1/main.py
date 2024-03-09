@@ -16,6 +16,7 @@ from game.logic.rafi import Rafi
 from game.logic.algo1 import Algo1
 from game.logic.algo2 import Algo2
 from game.logic.algo4 import Algo4
+from game.logic.free_diamonds import FreeDiamonds
 
 init()
 BASE_URL = "http://localhost:3000/api"
@@ -29,7 +30,8 @@ CONTROLLERS = {
     "Rafi": Rafi,
     "Algo1": Algo1,
     "Algo2": Algo2,
-    "Algo4": Algo4
+    "Algo4": Algo4,
+    "FreeDiamonds": FreeDiamonds
 }
 
 ###############################################################################

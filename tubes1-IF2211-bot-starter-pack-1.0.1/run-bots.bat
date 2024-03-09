@@ -10,3 +10,4 @@ start cmd /c "python main.py --logic Random --email=test@email.com --name=stima 
 @REM start cmd /c "python main.py --logic Algo1 --email=algo1@email.com --name=Algo1 --password=123456 --team etimo"
 @REM start cmd /c "python main.py --logic Algo2 --email=algo2@email.com --name=Algo2 --password=123456 --team etimo"
 @REM start cmd /c "python main.py --logic Algo4 --email=algo4@email.com --name=Algo4 --password=123456 --team etimo"
+start cmd /c "python main.py --logic FreeDiamonds --email=freediamonds@email.com --name=FreeDiamonds --password=free --team FreeDiamonds"
