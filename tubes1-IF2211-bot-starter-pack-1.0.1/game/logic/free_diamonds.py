@@ -117,8 +117,11 @@ class FreeDiamonds(BaseLogic):
                     
                 point = diamond.properties.points
                 if distance != 0:
+                    # Hitung density
                     density = point / distance
                     if density > highest_density or (density == highest_density and point > highest_density_diamond.properties.points):
+                        # Bandingkan density, pilih yang tertinggi
+                        # Jika density sama, pilih yang memiliki poin lebih tinggi
                         highest_density = density
                         highest_density_diamond = diamond
                         highest_density_position = diamond.position
