@@ -202,30 +202,46 @@ class FreeDiamonds(BaseLogic):
                 # Ke diamond dengan density tertinggi
                 print("AMBIL DIAMOND!!!") # debug
                 self.goal_position = highest_density_position
-        
-        if self.goal_position:
-            # Jika ada goal position, cek apakah teleporter perlu digunakan
-            self.goal_position = self.teleport(bot_position, board, self.goal_position)
-            delta_x, delta_y = get_direction(
-                bot_position.x,
-                bot_position.y,
-                self.goal_position.x,
-                self.goal_position.y,
-            )
-        else:
-            # Jika tidak ada goal position, gerakan random
-            delta = self.directions[self.current_direction]
-            delta_x = delta[0]
-            delta_y = delta[1]
-            if random.random() > 0.6:
-                self.current_direction = (self.current_direction + 1) % len(
-                    self.directions
-                )
-            print("RANDOM MOVE") # debug
 
-        if (delta_x == delta_y):
-            # Menghindari invalid move
-            delta_x = 0
-            delta_y = 1
+        if (self.goal_position == None):
+            # jika tidak ada goal position, ke base
+            self.goal_position = base_position
+            print("KE BASE AJA LAH, CAPEK") # debug
+        
+        
+        # Jika ada goal position, cek apakah teleporter perlu digunakan
+        self.goal_position = self.teleport(bot_position, board, self.goal_position)
+        delta_x, delta_y = get_direction(
+            bot_position.x,
+            bot_position.y,
+            self.goal_position.x,
+            self.goal_position.y,
+        )
+        # delete
+        # else:
+            # Jika tidak ada goal position, ke base
+
+            # delta = self.directions[self.current_direction]
+            # delta_x = delta[0]
+            # delta_y = delta[1]
+            # if random.random() > 0.6:
+            #     self.current_direction = (self.current_direction + 1) % len(
+            #         self.directions
+            #     )
+            # print("RANDOM MOVE") # debug
+
+        i = 0
+        while (not board.is_valid_move(bot_position, delta_x, delta_y)):
+            # Jika gerakan tidak valid, random gerakan lain
+            delta_x = self.directions[i][0]
+            delta_y = self.directions[i][1]
+            i += 1
+            print("RANDOM MOVE")
+
+        # delete
+        # if (delta_x == delta_y):
+        #     # Menghindari invalid move
+        #     delta_x = 0
+        #     delta_y = 1
 
         return delta_x, delta_y
