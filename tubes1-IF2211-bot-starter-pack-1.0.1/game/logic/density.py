@@ -13,8 +13,8 @@ class Density(BaseLogic):
         distance = abs(goals.x - bot_position.x) + abs(goals.y - bot_position.y)
         return distance
     
-    # def teleport_position (self, bot_position: Position, board: Board):
-    #     listPortal = [i for i in board.game_objects if i.type == "TeleportGameObject"]
+    def teleport_position (self, bot_position: Position, board: Board):
+        listPortal = [i for i in board.game_objects if i.type == "TeleportGameObject"]
 
     def highest_density(self, bot_position: Position, listdiamonds: list):
         highest_density = 0
@@ -29,21 +29,31 @@ class Density(BaseLogic):
                 highest_density_position = diamond
         return highest_density_position
     
-    # def isTackle(self, bot_position: Position, board: Board):
-    #     enemy = [i for i in board.bots if (i.position != bot_position)]
-    #     print(board_bot.properties.milliseconds_left)
-
-
+    def isTackle(self, board_bot: GameObject, bot_position: Position, board: Board):
+        enemy = [i for i in board.bots if (i.position != bot_position)]
+        move = [-99, -99]
+        for target in enemy:
+            if ((target.properties.diamonds > 0) and (board_bot.properties.diamonds < board_bot.properties.inventory_size) and (board_bot.properties.milliseconds_left < target.properties.milliseconds_left)):
+                if (bot_position.x == target.position.x) and (abs(bot_position.y - target.position.y) == 1):
+                    move = [0, target.position.y - bot_position.y]
+                elif (bot_position.y == target.position.y) and (abs(bot_position.x - target.position.x) == 1):
+                    move = [target.position.x - bot_position.x, 0]
+        return move
+    
 
     def next_move(self, board_bot: GameObject, board: Board) -> Tuple[int, int]:
         inventory_size = board_bot.properties.inventory_size if board_bot.properties.inventory_size else 5 # default 5
         bot_position = board_bot.position
         listdiamonds = board.diamonds
         collected = board_bot.properties.diamonds
+        tackle_check = self.isTackle(board_bot, bot_position, board)
 
         if (collected == inventory_size):
             base = board_bot.properties.base
             self.goal_position = base
+        elif (tackle_check[0] != -99):
+            delta_x = tackle_check[0]
+            delta_y = tackle_check[1]
         else:
             highest_density_position = self.highest_density(bot_position, listdiamonds)
             if (collected == 4 and highest_density_position.properties.points == 2):
@@ -68,4 +78,8 @@ class Density(BaseLogic):
                 self.current_direction = (self.current_direction + 1) % len(
                     self.directions
                 )
+        if (delta_x == delta_y):
+            delta_x = 0
+            delta_y = 1
+
         return delta_x, delta_y
