@@ -8,6 +8,7 @@ class Density(BaseLogic):
     def __init__(self):
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.goal_position: Optional[Position] = None
+        self.current_direction = 0
 
     def distance(self, bot_position: Position, goals: Position):
         distance = abs(goals.x - bot_position.x) + abs(goals.y - bot_position.y)
@@ -40,6 +41,18 @@ class Density(BaseLogic):
                     move = [target.position.x - bot_position.x, 0]
         return move
     
+    def redbutton(self, bot_position:Position, highest_density_position:Position, board: Board):
+        redbutton = [i for i in board.game_objects if i.type == "DiamondButtonGameObject"]
+        print(redbutton)
+        diamond_distance = self.distance(bot_position, highest_density_position.position)
+        for button in redbutton:
+            button_distance = self.distance(bot_position, button.position)
+            if (button_distance < diamond_distance):
+                print("go to red button")
+                return button
+            else:
+                print("go to diamond")
+                return highest_density_position   
 
     def next_move(self, board_bot: GameObject, board: Board) -> Tuple[int, int]:
         inventory_size = board_bot.properties.inventory_size if board_bot.properties.inventory_size else 5 # default 5
@@ -47,17 +60,20 @@ class Density(BaseLogic):
         listdiamonds = board.diamonds
         collected = board_bot.properties.diamonds
         tackle_check = self.isTackle(board_bot, bot_position, board)
+        base = board_bot.properties.base
 
         if (collected == inventory_size):
-            base = board_bot.properties.base
             self.goal_position = base
         elif (tackle_check[0] != -99):
             delta_x = tackle_check[0]
             delta_y = tackle_check[1]
         else:
             highest_density_position = self.highest_density(bot_position, listdiamonds)
-            if (collected == 4 and highest_density_position.properties.points == 2):
-                base = board_bot.properties.base
+            if (board_bot.properties.milliseconds_left/1000 < 10 and collected > 1):
+                self.goal_position = base
+            elif (len(listdiamonds) <= 5):
+                self.goal_position = self.redbutton(bot_position, highest_density_position, board).position
+            elif (collected == 4 and highest_density_position.properties.points == 2):
                 self.goal_position = base
             else:
                 self.goal_position = highest_density_position.position
