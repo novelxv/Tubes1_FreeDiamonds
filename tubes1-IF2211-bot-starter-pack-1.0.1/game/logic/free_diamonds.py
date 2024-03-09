@@ -76,25 +76,24 @@ class FreeDiamonds(BaseLogic):
     #     return highest_density_position # tipe data Position
 
     # ----------------- NEW -----------------
-    def get_nearest_blue(self, bot_position: Position, board: Board, list_diamonds: list):
+    def get_nearest_blue(self, bot_position: Position, board: Board):
         """ Mencari diamond biru terdekat """
         shortest_distance = float('inf')
         nearest_blue_position = None
         teleporters = [i for i in board.game_objects if i.type == "TeleportGameObject"]
+        listblue = [i for i in board.diamonds if i.properties.points == 1]
 
-        for diamond in list_diamonds:
+        for diamond in listblue:
             distance = self.distance(bot_position, diamond.position)
             teleport_distance = self.teleporter_distance(bot_position, diamond.position, teleporters)
             # Bandingkan jarak jika melewati teleporter dan tidak
             if teleport_distance < distance:
                 distance = teleport_distance
-            if diamond.properties.points == 1 and distance < shortest_distance:
+            if distance < shortest_distance:
                 shortest_distance = distance
                 nearest_blue_position = diamond.position
-
-            print("NEAREST BLUE: ", nearest_blue_position) # debug
-
-            return nearest_blue_position # tipe data Position
+        print("NEAREST BLUE: ", nearest_blue_position) # debug
+        return nearest_blue_position # tipe data Position
 
     def highest_density(self, bot_position: Position, board: Board, list_diamonds: list, prefer_low_value=False):
         """ Mencari diamond dengan density tertinggi """
@@ -105,7 +104,7 @@ class FreeDiamonds(BaseLogic):
 
         if prefer_low_value:
             # Jika prefer_low_value True, cari diamond dengan poin 1
-            diamond_position = self.get_nearest_blue(bot_position, board, list_diamonds)
+            diamond_position = self.get_nearest_blue(bot_position, board)
             return diamond_position # tipe data Position
         else:    
             for diamond in list_diamonds:
