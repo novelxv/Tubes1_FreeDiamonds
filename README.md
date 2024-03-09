@@ -20,7 +20,7 @@ Algoritma Greedy yang diimplementasikan berfokus pada pencarian diamond dengan d
   - Yarn
 
 - **Instalasi dan Konfigurasi Awal**:
-  1. Download dan extract source code game engine.
+  1. Download dan extract source code game engine dari https://github.com/haziqam/tubes1-IF2211-game-engine/releases/tag/v1.1.0
   2. Buka terminal di folder hasil extract.
   3. Masuk ke root directory.
 
