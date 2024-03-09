@@ -133,17 +133,18 @@ class FreeDiamonds(BaseLogic):
     def is_tackle(self, board_bot: GameObject, bot_position: Position, board: Board):
         """ Mengecek apakah ada musuh yang bisa di-tackle """
         enemy = [i for i in board.bots if (i.position != bot_position)]
-        move = [-99, -99]
+        # move = [-99, -99]
         for target in enemy:
             if ((target.properties.diamonds > 0) and (board_bot.properties.diamonds < board_bot.properties.inventory_size) and (board_bot.properties.milliseconds_left < target.properties.milliseconds_left)):
                 # Jika musuh memiliki diamond, bot belum penuh, dan waktu bot lebih sedikit
+                # return target.position
                 if (bot_position.x == target.position.x) and (abs(bot_position.y - target.position.y) == 1):
                     # Jika musuh ada di atas atau bawah bot
-                    move = [0, target.position.y - bot_position.y]
+                    return target.position
                 elif (bot_position.y == target.position.y) and (abs(bot_position.x - target.position.x) == 1):
                     # Jika musuh ada di kiri atau kanan bot
-                    move = [target.position.x - bot_position.x, 0]
-        return move # tipe data tuple
+                    return target.position
+        # return move # tipe data tuple
     
     def push_red_button(self, bot_position:Position, highest_density_position:Position, board: Board):
         """ Memilih antara red button atau diamond dengan density tertinggi berdasarkan jarak terdekat """
@@ -177,11 +178,10 @@ class FreeDiamonds(BaseLogic):
             # Jika inventory penuh, kembali ke base
             self.goal_position = base_position
             print("FULL, AYO KE BASE") # debug
-        elif (tackle_check[0] != -99):
+        elif (tackle_check):
             # Jika ada musuh yang bisa di-tackle, lakukan tackle
-            delta_x = tackle_check[0]
-            delta_y = tackle_check[1]
-            print("TACKLE: ", delta_x, delta_y) # debug
+            self.goal_position = tackle_check
+            print("TACKLE: ", tackle_check) # debug
         else:
             if (collected == inventory_size - 1):
                 # Jika inventory hampir penuh, ubah strategi untuk mengumpulkan diamond poin 1

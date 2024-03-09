@@ -1,15 +1,15 @@
 from typing import Tuple
 from game.logic.base import BaseLogic
 from game.models import GameObject, Board, Position
-from ..util import get_direction, position_equals
+from ..util import get_direction
 
 class Algo2(BaseLogic):
     def __init__(self):
         pass
 
-    def find_nearest_diamond(self, bot_position: Position, list_diamonds: list, prefer_low_value=False):
+    def find_greatest_diamond(self, bot_position: Position, list_diamonds: list, prefer_low_value=False):
         shortest_distance = float('inf')
-        nearest_diamond = None
+        greatest_diamond = None
         has_diamond_2 = any(diamond.properties.points == 2 for diamond in list_diamonds)
         
         # Memperbarui logika untuk memprioritaskan diamond berdasarkan kondisi
@@ -21,21 +21,21 @@ class Algo2(BaseLogic):
             if prefer_low_value:
                 if diamond.properties.points == 1 and distance < shortest_distance:
                     shortest_distance = distance
-                    nearest_diamond = diamond
+                    greatest_diamond = diamond
             else:
                 if has_diamond_2:
                     # Jika tidak, pilih diamond dengan poin tertinggi yang bisa ditemukan terlebih dahulu
                     # Ini akan selalu memprioritaskan diamond dengan poin 2 terlebih dahulu
                     if distance < shortest_distance and diamond.properties.points == 2:
                         shortest_distance = distance
-                        nearest_diamond = diamond
+                        greatest_diamond = diamond
                 else:
                     # Jika tidak ada diamond dengan poin 2, pilih diamond dengan poin 1
                     if distance < shortest_distance and diamond.properties.points == 1:
                         shortest_distance = distance
-                        nearest_diamond = diamond
+                        greatest_diamond = diamond
 
-        return nearest_diamond
+        return greatest_diamond
 
     def next_move(self, board_bot: GameObject, board: Board) -> Tuple[int, int]:
         inventory_size = board_bot.properties.inventory_size if board_bot.properties.inventory_size else 0
@@ -46,10 +46,10 @@ class Algo2(BaseLogic):
         # Tentukan apakah harus mengambil diamond dengan poin 1 berdasarkan kondisi inventory
         prefer_low_value_diamond = collected == inventory_size - 1
 
-        nearest_diamond = self.find_nearest_diamond(bot_position, list_diamonds, prefer_low_value_diamond)
+        greatest_diamond = self.find_greatest_diamond(bot_position, list_diamonds, prefer_low_value_diamond)
 
-        if nearest_diamond and collected < inventory_size:
-            direction_to_diamond = get_direction(bot_position.x, bot_position.y, nearest_diamond.position.x, nearest_diamond.position.y)
+        if greatest_diamond and collected < inventory_size:
+            direction_to_diamond = get_direction(bot_position.x, bot_position.y, greatest_diamond.position.x, greatest_diamond.position.y)
             return direction_to_diamond
         else:
             # Kembali ke base jika inventory penuh atau tidak ada diamond terdekat
