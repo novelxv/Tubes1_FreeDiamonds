@@ -13,26 +13,6 @@ class Density(BaseLogic):
     def distance(self, bot_position: Position, goals: Position):
         distance = abs(goals.x - bot_position.x) + abs(goals.y - bot_position.y)
         return distance
-    
-    def teleport (self, bot_position: Position, board: Board, goal_position: Position):
-        listPortal = [i for i in board.game_objects if i.type == "TeleportGameObject"]
-        distance = self.distance(bot_position, goal_position)
-
-        in_portal1 = self.distance(bot_position, listPortal[0].position)
-        out_portal1 = self.distance(listPortal[1].position, goal_position)
-        distance1 = in_portal1 + out_portal1
-
-        in_portal2 = self.distance(bot_position, listPortal[1].position)
-        out_portal2 = self.distance(listPortal[0].position, goal_position)
-        distance2 = in_portal2 + out_portal2
-        
-        choosen = min(distance, distance1, distance2) 
-        if (choosen == distance1):
-            return listPortal[0].position
-        elif (choosen == distance2):
-            return listPortal[1].position
-        else:
-            return goal_position
 
     def highest_density(self, bot_position: Position, listdiamonds: list):
         highest_density = 0
@@ -46,61 +26,25 @@ class Density(BaseLogic):
                 highest_density = density
                 highest_density_position = diamond
         return highest_density_position
-    
-    def isTackle(self, board_bot: GameObject, bot_position: Position, board: Board):
-        enemy = [i for i in board.bots if (i.position != bot_position)]
-        move = [-99, -99]
-        for target in enemy:
-            if ((target.properties.diamonds > 0) and (board_bot.properties.diamonds < board_bot.properties.inventory_size) and (board_bot.properties.milliseconds_left < target.properties.milliseconds_left)):
-                if (bot_position.x == target.position.x) and (abs(bot_position.y - target.position.y) == 1):
-                    move = [0, target.position.y - bot_position.y]
-                elif (bot_position.y == target.position.y) and (abs(bot_position.x - target.position.x) == 1):
-                    move = [target.position.x - bot_position.x, 0]
-        return move
-    
-    def redbutton(self, bot_position:Position, highest_density_position:Position, board: Board):
-        redbutton = [i for i in board.game_objects if i.type == "DiamondButtonGameObject"]
-        print(redbutton)
-        diamond_distance = self.distance(bot_position, highest_density_position.position)
-        for button in redbutton:
-            button_distance = self.distance(bot_position, button.position)
-            if (button_distance < diamond_distance):
-                print("go to red button")
-                return button
-            else:
-                print("go to diamond")
-                return highest_density_position   
 
     def next_move(self, board_bot: GameObject, board: Board) -> Tuple[int, int]:
         inventory_size = board_bot.properties.inventory_size if board_bot.properties.inventory_size else 5 # default 5
         bot_position = board_bot.position
         listdiamonds = board.diamonds
         collected = board_bot.properties.diamonds
-        tackle_check = self.isTackle(board_bot, bot_position, board)
         base = board_bot.properties.base
-
-        listPortal = self.teleport(bot_position, board, base)
-        print(listPortal)
 
         if (collected == inventory_size):
             self.goal_position = base
-        elif (tackle_check[0] != -99):
-            delta_x = tackle_check[0]
-            delta_y = tackle_check[1]
         else:
             highest_density_position = self.highest_density(bot_position, listdiamonds)
-            if (board_bot.properties.milliseconds_left/1000 < 10 and collected > 1):
-                self.goal_position = base
-            elif (len(listdiamonds) <= 5):
-                self.goal_position = self.redbutton(bot_position, highest_density_position, board).position
-            elif (collected == 4 and highest_density_position.properties.points == 2):
+            if (collected == 4 and highest_density_position.properties.points == 2):
                 self.goal_position = base
             else:
                 self.goal_position = highest_density_position.position
         
         if self.goal_position:
             # We are aiming for a specific position, calculate delta
-            self.goal_position = self.teleport(bot_position, board, self.goal_position)
             delta_x, delta_y = get_direction(
                 bot_position.x,
                 bot_position.y,
