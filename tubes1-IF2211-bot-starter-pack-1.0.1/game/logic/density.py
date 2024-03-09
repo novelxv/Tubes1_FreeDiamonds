@@ -14,8 +14,25 @@ class Density(BaseLogic):
         distance = abs(goals.x - bot_position.x) + abs(goals.y - bot_position.y)
         return distance
     
-    def teleport_position (self, bot_position: Position, board: Board):
+    def teleport (self, bot_position: Position, board: Board, goal_position: Position):
         listPortal = [i for i in board.game_objects if i.type == "TeleportGameObject"]
+        distance = self.distance(bot_position, goal_position)
+
+        in_portal1 = self.distance(bot_position, listPortal[0].position)
+        out_portal1 = self.distance(listPortal[1].position, goal_position)
+        distance1 = in_portal1 + out_portal1
+
+        in_portal2 = self.distance(bot_position, listPortal[1].position)
+        out_portal2 = self.distance(listPortal[0].position, goal_position)
+        distance2 = in_portal2 + out_portal2
+        
+        choosen = min(distance, distance1, distance2) 
+        if (choosen == distance1):
+            return listPortal[0].position
+        elif (choosen == distance2):
+            return listPortal[1].position
+        else:
+            return goal_position
 
     def highest_density(self, bot_position: Position, listdiamonds: list):
         highest_density = 0
@@ -62,6 +79,9 @@ class Density(BaseLogic):
         tackle_check = self.isTackle(board_bot, bot_position, board)
         base = board_bot.properties.base
 
+        listPortal = self.teleport(bot_position, board, base)
+        print(listPortal)
+
         if (collected == inventory_size):
             self.goal_position = base
         elif (tackle_check[0] != -99):
@@ -80,6 +100,7 @@ class Density(BaseLogic):
         
         if self.goal_position:
             # We are aiming for a specific position, calculate delta
+            self.goal_position = self.teleport(bot_position, board, self.goal_position)
             delta_x, delta_y = get_direction(
                 bot_position.x,
                 bot_position.y,
